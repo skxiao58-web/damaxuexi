@@ -30,3 +30,10 @@ Pages 示例：https://skxiao58-web.github.io/damaxuexi/fps.html
 打开 `nightfall/` 或首页入口：可交互 30 秒夜间突袭（空格第一人称，按住射击）。需联网加载 Three.js。
 
 Pages：https://skxiao58-web.github.io/damaxuexi/nightfall/
+
+## Nightfall Strike（rework）
+
+打开 `nightfall-rework/`：稳定多 CDN 启动的 Nightfall Strike 重制版（本地 vendor Three.js r170 回退）。
+
+Pages：https://skxiao58-web.github.io/damaxuexi/nightfall-rework/
+
