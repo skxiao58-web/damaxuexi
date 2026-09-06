@@ -37,14 +37,16 @@
     var statusEl = document.getElementById("status");
     var startBtn = document.getElementById("start");
     var errorEl = document.getElementById("error");
+    var threeReady = false;
     var loadWatch = setTimeout(function () {
-      fail("加载超时。请刷新，或换用更稳定的网络后再试。");
-    }, 25000);
+      if (!threeReady) fail("加载超时：Three.js 未能在限定时间内就绪。请刷新，或换用更稳定的网络后再试。");
+    }, 40000);
     window.__clearNightfallLoadWatch = function () {
       clearTimeout(loadWatch);
       if (statusEl) statusEl.textContent = "就绪 · 点击开始行动";
     };
     function fail(msg) {
+      if (threeReady) return;
       clearTimeout(loadWatch);
       if (startBtn) {
         startBtn.disabled = true;
@@ -57,7 +59,7 @@
       }
     }
     window.__showNightfallFail = fail;
-    var threeUrls = ["./three.min.js", "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js", "https://unpkg.com/three@0.170.0/build/three.min.js", "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"];
+    var threeUrls = ["./three.min.js", "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js", "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"];
     var idx = 0;
     function setStatus(t) {
       if (statusEl) statusEl.textContent = t;
@@ -67,22 +69,29 @@
       var s = document.createElement("script");
       s.src = "game-v2.js";
       s.onerror = function () {
-        fail("game-v2.js 加载失败");
+        clearTimeout(loadWatch);
+        if (startBtn) { startBtn.disabled = true; startBtn.textContent = "加载失败"; }
+        if (statusEl) statusEl.textContent = "加载失败";
+        if (errorEl) { errorEl.hidden = false; errorEl.textContent = "game-v2.js 加载失败"; }
       };
       document.body.appendChild(s);
     }
     function loadNextThree() {
       if (idx >= threeUrls.length) {
-        fail("Three.js 所有 CDN 均失败。请检查网络后刷新。");
+        fail("Three.js 所有来源均失败。请检查网络后刷新。");
         return;
       }
       var url = threeUrls[idx++];
-      setStatus("加载 Three.js（源 " + idx + "/" + threeUrls.length + "）…");
+      var label = idx === 1 ? "本地" : ("备用源 " + (idx - 1));
+      setStatus("正在加载 Three.js（" + label + "，" + idx + "/" + threeUrls.length + "）…");
       var s = document.createElement("script");
       s.src = url;
       s.onload = function () {
         if (window.THREE) {
-          setStatus("Three.js 已就绪，加载游戏…");
+          threeReady = true;
+          clearTimeout(loadWatch);
+          loadWatch = null;
+          setStatus("Three.js 已就绪，正在加载游戏…");
           loadGame();
         } else {
           loadNextThree();
