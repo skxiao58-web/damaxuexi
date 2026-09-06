@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nightfall Strike · 重制版</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="stage">
+    <canvas id="game"></canvas>
+    <div id="shade"></div>
+    <section id="menu">
+      <div class="eyebrow">NIGHTFALL STRIKE · REWORK</div>
+      <h1>夜间突袭<span>30 秒连续行动</span></h1>
+      <p>废墟街道推进 · 掩体交火 · 爆炸与直升机掠过。点击开始；空格切换第一人称；Esc 暂停。</p>
+      <button id="start" disabled>加载中…</button>
+      <p id="status" class="sound"></p>
+      <div class="instructions">鼠标移动瞄准 · 按住射击 · 命中前方敌方单位计分</div>
+    </section>
+    <section id="pause" hidden>
+      <h2>已暂停</h2>
+      <p>按 Esc 或点击继续</p>
+      <button id="resume">继续</button>
+      <button id="restart" class="secondary">重新开始</button>
+    </section>
+    <section id="end" hidden>
+      <div class="eyebrow">MISSION COMPLETE</div>
+      <h2>行动结束</h2>
+      <p id="result">30 秒行动完成</p>
+      <button id="replay">再来一次</button>
+    </section>
+    <div id="error" hidden></div>
+  </div>
+  <script type="module" src="./boot.js"></script>
+</body>
+</html>
