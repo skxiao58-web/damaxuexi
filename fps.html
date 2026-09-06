@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>夜间战区 · Three.js · damaxuexi</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body.fps-page {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 1rem 0 2rem;
+      background: radial-gradient(circle at top, #0b1220 0%, #020617 55%);
+      color: #f8fafc;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .fps-shell {
+      width: min(96vw, 1100px);
+      display: flex;
+      flex-direction: column;
+      gap: .85rem;
+    }
+    .fps-chrome {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: .75rem;
+      padding: .85rem 1rem;
+      border-radius: 1rem;
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .fps-chrome h1 {
+      margin: 0;
+      font-size: clamp(1.05rem, 3.5vw, 1.35rem);
+      font-weight: 750;
+      letter-spacing: .02em;
+    }
+    .fps-chrome .meta {
+      margin: .2rem 0 0;
+      color: rgba(248,250,252,.62);
+      font-size: .85rem;
+    }
+    .fps-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .fps-actions button {
+      border: 0; border-radius: 999px; padding: .55rem 1rem;
+      background: #38bdf8; color: #0f172a; font-weight: 700; cursor: pointer;
+      font-size: .9rem;
+    }
+    .fps-actions button.secondary {
+      background: transparent; color: #f8fafc; border: 1px solid rgba(255,255,255,.16);
+    }
+    .fps-actions a.back {
+      display: inline-flex; align-items: center;
+      border-radius: 999px; padding: .55rem 1rem;
+      border: 1px solid rgba(255,255,255,.16);
+      color: #f8fafc; text-decoration: none; font-weight: 600; font-size: .9rem;
+    }
+    .fps-stage-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 1rem;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.12);
+      background: #020617;
+      box-shadow: 0 24px 60px rgba(0,0,0,.45);
+    }
+    #fps-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .fps-hint {
+      margin: 0;
+      color: rgba(248,250,252,.55);
+      font-size: .88rem;
+      text-align: center;
+    }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+<body class="fps-page">
+  <div class="fps-shell">
+    <header class="fps-chrome">
+      <div>
+        <h1>夜间战区 · 电影运镜</h1>
+        <p class="meta">Three.js 原语短片 · 自动约 30 秒</p>
+      </div>
+      <div class="fps-actions">
+        <button type="button" id="btn-start">开始</button>
+        <button type="button" id="btn-replay" class="secondary">重播</button>
+        <a class="back" href="index.html">返回首页</a>
+      </div>
+    </header>
+    <div class="fps-stage-wrap" aria-label="夜间战区画面">
+      <canvas id="fps-canvas"></canvas>
+    </div>
+    <p class="fps-hint">自动约 30 秒电影运镜 · 画布内无 HUD / 文字 · 结束后可点「重播」</p>
+  </div>
+  <script type="module" src="fps.js"></script>
+</body>
+</html>
