@@ -20,7 +20,7 @@
 
 ## 夜间战区（Three.js）
 
-打开 `fps.html`（或首页按钮「夜间战区 · Three.js」）观看约 30 秒雾夜废墟街道电影运镜：小队推进、爆炸与枪口闪光、低空直升机掠过。需要联网加载 Three.js r160 CDN。
+打开 `fps.html`（或首页按钮「夜间战区 · Three.js」）观看约 30 秒雾夜废墟街道电影运镜：小队推进、爆炸与枪口闪光、低空直升机掠过。页面自包含脚本，需联网加载 Three.js r128 CDN。
 
 Pages 示例：https://skxiao58-web.github.io/damaxuexi/fps.html
 
