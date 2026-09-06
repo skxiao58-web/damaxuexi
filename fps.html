@@ -1,114 +1,517 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>夜间战区 · Three.js · damaxuexi</title>
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    body.fps-page {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 1rem 0 2rem;
-      background: radial-gradient(circle at top, #0b1220 0%, #020617 55%);
-      color: #f8fafc;
-      font-family: system-ui, -apple-system, sans-serif;
-    }
-    .fps-shell {
-      width: min(96vw, 1100px);
-      display: flex;
-      flex-direction: column;
-      gap: .85rem;
-    }
-    .fps-chrome {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: .75rem;
-      padding: .85rem 1rem;
-      border-radius: 1rem;
-      background: rgba(15, 23, 42, 0.78);
-      border: 1px solid rgba(255,255,255,.12);
-    }
-    .fps-chrome h1 {
-      margin: 0;
-      font-size: clamp(1.05rem, 3.5vw, 1.35rem);
-      font-weight: 750;
-      letter-spacing: .02em;
-    }
-    .fps-chrome .meta {
-      margin: .2rem 0 0;
-      color: rgba(248,250,252,.62);
-      font-size: .85rem;
-    }
-    .fps-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
-    .fps-actions button {
-      border: 0; border-radius: 999px; padding: .55rem 1rem;
-      background: #38bdf8; color: #0f172a; font-weight: 700; cursor: pointer;
-      font-size: .9rem;
-    }
-    .fps-actions button.secondary {
-      background: transparent; color: #f8fafc; border: 1px solid rgba(255,255,255,.16);
-    }
-    .fps-actions a.back {
-      display: inline-flex; align-items: center;
-      border-radius: 999px; padding: .55rem 1rem;
-      border: 1px solid rgba(255,255,255,.16);
-      color: #f8fafc; text-decoration: none; font-weight: 600; font-size: .9rem;
-    }
-    .fps-stage-wrap {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      border-radius: 1rem;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,.12);
-      background: #020617;
-      box-shadow: 0 24px 60px rgba(0,0,0,.45);
-    }
-    #fps-canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-    .fps-hint {
-      margin: 0;
-      color: rgba(248,250,252,.55);
-      font-size: .88rem;
-      text-align: center;
-    }
-  </style>
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
-    }
-  }
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AAA 军事 FPS 30秒连续电影级序列</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 56.25vw; /* 16:9 Aspect Ratio */
+            max-height: 100vh;
+            max-width: 177.78vh;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
+        }
+        #ui-overlay {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(10, 15, 20, 0.75);
+            padding: 10px 24px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+        }
+        button {
+            background: #e63946;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button:hover {
+            background: #f1faee;
+            color: #1d3557;
+            box-shadow: 0 0 15px rgba(255,255,255,0.4);
+        }
+        .time-display {
+            color: #a8dadc;
+            font-family: monospace;
+            font-size: 16px;
+            min-width: 120px;
+        }
+        .timeline-bar {
+            width: 200px;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+        .timeline-progress {
+            width: 0%;
+            height: 100%;
+            background: #415a77;
+            transition: width 0.1s linear;
+        }
+    </style>
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
-<body class="fps-page">
-  <div class="fps-shell">
-    <header class="fps-chrome">
-      <div>
-        <h1>夜间战区 · 电影运镜</h1>
-        <p class="meta">Three.js 原语短片 · 自动约 30 秒</p>
-      </div>
-      <div class="fps-actions">
-        <button type="button" id="btn-start">开始</button>
-        <button type="button" id="btn-replay" class="secondary">重播</button>
-        <a class="back" href="index.html">返回首页</a>
-      </div>
-    </header>
-    <div class="fps-stage-wrap" aria-label="夜间战区画面">
-      <canvas id="fps-canvas"></canvas>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div id="ui-overlay">
+        <button id="play-btn">播放 / 重置</button>
+        <div class="timeline-bar">
+            <div id="progress" class="timeline-progress"></div>
+        </div>
+        <div id="time-text" class="time-display">00:00 / 00:30</div>
     </div>
-    <p class="fps-hint">自动约 30 秒电影运镜 · 画布内无 HUD / 文字 · 结束后可点「重播」</p>
-  </div>
-  <script type="module" src="fps.js"></script>
+
+    <script>
+        // --- 1. 基础场景与渲染器配置 ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050a12, 0.025);
+
+        const camera = new THREE.PerspectiveCamera(65, 16 / 9, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 0.9;
+        container.appendChild(renderer.domElement);
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            const w = container.clientWidth;
+            const h = container.clientHeight;
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        });
+
+        // --- 2. 灯光系统 (冷调夜景 + 战争火光) ---
+        const ambientLight = new THREE.AmbientLight(0x1a233a, 0.4);
+        scene.add(ambientLight);
+
+        // 月光/城市远景冷光源
+        const moonLight = new THREE.DirectionalLight(0x4a6fa5, 0.8);
+        moonLight.position.set(-30, 50, -20);
+        moonLight.castShadow = true;
+        moonLight.shadow.mapSize.width = 2048;
+        moonLight.shadow.mapSize.height = 2048;
+        scene.add(moonLight);
+
+        // 动态爆炸火光
+        const expLight = new THREE.PointLight(0xff5500, 0, 80);
+        expLight.position.set(0, 4, -40);
+        scene.add(expLight);
+
+        // 枪口焰火焰光源
+        const muzzleLight = new THREE.PointLight(0xffaa22, 0, 15);
+        scene.add(muzzleLight);
+
+        // --- 3. 环境建模 (损毁的城市街道) ---
+        const roadGroup = new THREE.Group();
+        scene.add(roadGroup);
+
+        // 地面
+        const floorGeo = new THREE.PlaneGeometry(40, 200, 64, 64);
+        // 添加凹凸不平的战争损毁细节
+        const pos = floorGeo.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+            let vx = pos.getX(i);
+            let vy = pos.getY(i);
+            pos.setZ(i, (Math.sin(vx * 0.5) * Math.cos(vy * 0.5)) * 0.3 + (Math.random() - 0.5) * 0.2);
+        }
+        floorGeo.computeVertexNormals();
+
+        const floorMat = new THREE.MeshStandardMaterial({
+            color: 0x11161d,
+            roughness: 0.85,
+            metalness: 0.2
+        });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        roadGroup.add(floor);
+
+        // 生成两侧损坏的建筑
+        function createBuilding(x, z, width, depth, height) {
+            const building = new THREE.Group();
+            const mat = new THREE.MeshStandardMaterial({ color: 0x1a1e24, roughness: 0.9 });
+            const body = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), mat);
+            body.castShadow = true;
+            body.receiveShadow = true;
+            building.add(body);
+
+            // 破损碎块细节
+            for(let i=0; i<5; i++){
+                const chunk = new THREE.Mesh(
+                    new THREE.BoxGeometry(width*0.3, height*0.1, depth*0.3),
+                    mat
+                );
+                chunk.position.set(
+                    (Math.random()-0.5)*width,
+                    height/2 + (Math.random()-0.5)*2,
+                    (Math.random()-0.5)*depth
+                );
+                chunk.rotation.set(Math.random(), Math.random(), Math.random());
+                building.add(chunk);
+            }
+
+            building.position.set(x, height / 2, z);
+            return building;
+        }
+
+        for (let z = -80; z < 80; z += 25) {
+            roadGroup.add(createBuilding(-16 - Math.random()*4, z, 12, 20, 25 + Math.random()*15));
+            roadGroup.add(createBuilding(16 + Math.random()*4, z, 12, 20, 20 + Math.random()*15));
+        }
+
+        // 掩体：损毁的军用混凝土屏障与车辆
+        const coverBarrier = new THREE.Mesh(
+            new THREE.BoxGeometry(3.5, 1.3, 1.2),
+            new THREE.MeshStandardMaterial({ color: 0x333a42, roughness: 0.7 })
+        );
+        coverBarrier.position.set(1.5, 0.65, -18);
+        coverBarrier.rotation.y = -0.2;
+        coverBarrier.castShadow = true;
+        coverBarrier.receiveShadow = true;
+        scene.add(coverBarrier);
+
+        // 废弃装甲车模型
+        const vehicleGroup = new THREE.Group();
+        const vBody = new THREE.Mesh(new THREE.BoxGeometry(3, 2, 6), new THREE.MeshStandardMaterial({color: 0x1c2419, roughness: 0.6}));
+        vBody.position.y = 1.2;
+        vehicleGroup.add(vBody);
+        vehicleGroup.position.set(-4, 0, -25);
+        vehicleGroup.rotation.y = 0.35;
+        scene.add(vehicleGroup);
+
+        // --- 4. 角色与武器建模 ---
+        function createSoldier(isLead = false) {
+            const soldier = new THREE.Group();
+            const armorMat = new THREE.MeshStandardMaterial({ color: 0x1b241e, roughness: 0.6 }); // 军绿暗色战术服
+            const gearMat = new THREE.MeshStandardMaterial({ color: 0x0f1411, roughness: 0.5 });  // 战术马甲/装备
+
+            // 躯干
+            const torso = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.7, 0.3), gearMat);
+            torso.position.y = 1.1;
+            torso.castShadow = true;
+            soldier.add(torso);
+
+            // 头部与头盔
+            const head = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 16), armorMat);
+            head.position.y = 1.62;
+            soldier.add(head);
+
+            const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16, 0, Math.PI * 2, 0, Math.PI * 0.6), gearMat);
+            helmet.position.y = 1.64;
+            soldier.add(helmet);
+
+            // 夜视仪 (NVG)
+            const nvg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.15), new THREE.MeshStandardMaterial({color: 0x00ff88, emissive: 0x002211}));
+            nvg.rotation.x = Math.PI/2;
+            nvg.position.set(0, 1.65, 0.2);
+            soldier.add(nvg);
+
+            // 四肢 (简化骨骼节点)
+            const leftArm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 0.6), armorMat);
+            leftArm.position.set(-0.32, 1.1, 0.1);
+            leftArm.rotation.x = -0.6;
+            soldier.add(leftArm);
+
+            const rightArm = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 0.6), armorMat);
+            rightArm.position.set(0.32, 1.1, 0.2);
+            rightArm.rotation.x = -0.8;
+            soldier.add(rightArm);
+
+            // 突击步枪
+            const rifle = new THREE.Group();
+            const rBody = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.7), gearMat);
+            const rMag = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.2, 0.1), gearMat);
+            rMag.position.set(0, -0.1, -0.05);
+            rMag.rotation.x = 0.2;
+            const rBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.3), gearMat);
+            rBarrel.rotation.x = Math.PI/2;
+            rBarrel.position.set(0, 0.02, 0.45);
+
+            rifle.add(rBody, rMag, rBarrel);
+            rifle.position.set(0.18, 1.15, 0.4);
+            soldier.add(rifle);
+
+            soldier.rifle = rifle;
+            return soldier;
+        }
+
+        // 领头士兵与小队成员
+        const leadSoldier = createSoldier(true);
+        scene.add(leadSoldier);
+
+        const squadMembers = [createSoldier(), createSoldier()];
+        squadMembers.forEach((m, idx) => {
+            scene.add(m);
+        });
+
+        // 武装直升机模型
+        const heliGroup = new THREE.Group();
+        const hBody = new THREE.Mesh(new THREE.BoxGeometry(2, 2.2, 8), new THREE.MeshStandardMaterial({color: 0x0d1117, roughness: 0.4}));
+        const hRotor = new THREE.Mesh(new THREE.BoxGeometry(10, 0.05, 0.4), new THREE.MeshStandardMaterial({color: 0x050505}));
+        hRotor.position.y = 1.4;
+        heliGroup.add(hBody, hRotor);
+        heliGroup.position.set(15, 18, -60);
+        scene.add(heliGroup);
+
+        // --- 5. 粒子系统 (烟雾、火花、碎片) ---
+        // 爆炸火花
+        const sparkCount = 300;
+        const sparkGeo = new THREE.BufferGeometry();
+        const sparkPos = new Float32Array(sparkCount * 3);
+        const sparkVel = [];
+        for(let i=0; i<sparkCount; i++) {
+            sparkPos[i*3] = 0;
+            sparkPos[i*3+1] = -10; // 初始隐藏
+            sparkPos[i*3+2] = 0;
+            sparkVel.push(new THREE.Vector3(
+                (Math.random()-0.5)*15,
+                Math.random()*18,
+                (Math.random()-0.5)*15
+            ));
+        }
+        sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPos, 3));
+        const sparkMat = new THREE.PointsMaterial({color: 0xffaa00, size: 0.15, transparent: true, opacity: 0.9});
+        const sparkParticles = new THREE.Points(sparkGeo, sparkMat);
+        scene.add(sparkParticles);
+
+        // 战场浮空碎片与灰尘
+        const dustCount = 500;
+        const dustGeo = new THREE.BufferGeometry();
+        const dustPos = new Float32Array(dustCount * 3);
+        for(let i=0; i<dustCount*3; i+=3) {
+            dustPos[i] = (Math.random()-0.5)*40;
+            dustPos[i+1] = Math.random()*10;
+            dustPos[i+2] = (Math.random()-0.5)*100;
+        }
+        dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+        const dustMat = new THREE.PointsMaterial({color: 0x556677, size: 0.08, transparent: true, opacity: 0.3});
+        const dustParticles = new THREE.Points(dustGeo, dustMat);
+        scene.add(dustParticles);
+
+        // --- 6. 30 秒连续动画核心逻辑 (Timeline Driver) ---
+        let startTime = null;
+        let isPlaying = true;
+        const TOTAL_TIME = 30; // 30 秒全时长
+
+        function triggerExplosion(x, y, z) {
+            expLight.position.set(x, y, z);
+            expLight.intensity = 8.0;
+
+            const positions = sparkParticles.geometry.attributes.position.array;
+            for(let i=0; i<sparkCount; i++) {
+                positions[i*3] = x;
+                positions[i*3+1] = y;
+                positions[i*3+2] = z;
+            }
+            sparkParticles.geometry.attributes.position.needsUpdate = true;
+        }
+
+        function updateSequence(time) {
+            // 时间线参数 (0.0 到 30.0)
+            const t = time % TOTAL_TIME;
+
+            // UI 界面更新
+            document.getElementById('progress').style.width = `${(t / TOTAL_TIME) * 100}%`;
+            const sec = Math.floor(t).toString().padStart(2, '0');
+            document.getElementById('time-text').innerText = `00:${sec} / 00:30`;
+
+            // --- 阶段 1 [00:00 - 00:08]: 谨慎推进街道 ---
+            if (t < 8) {
+                const advanceZ = -t * 1.2;
+                leadSoldier.position.set(0, 0, advanceZ);
+
+                // 小队跟进
+                squadMembers[0].position.set(-1.8, 0, advanceZ + 3);
+                squadMembers[1].position.set(1.6, 0, advanceZ + 4.5);
+
+                // 战术呼吸与步幅摆动
+                leadSoldier.position.y = Math.abs(Math.sin(t * 5)) * 0.08;
+                leadSoldier.rotation.y = Math.sin(t * 2) * 0.05;
+
+                // 摄像机：近距离战术肩后视角
+                const camOffset = new THREE.Vector3(0.4, 1.65, 1.8);
+                camera.position.copy(leadSoldier.position).add(camOffset);
+                camera.lookAt(leadSoldier.position.x, 1.5, leadSoldier.position.z - 5);
+
+                // 手持震动
+                camera.position.x += (Math.random() - 0.5) * 0.015;
+                camera.position.y += (Math.random() - 0.5) * 0.015;
+            }
+
+            // --- 阶段 2 [00:08 - 00:14]: 遭遇敌火，交火并向掩体靠拢 ---
+            else if (t >= 8 && t < 14) {
+                const subT = t - 8;
+
+                // 领头士兵快速向右手边的掩体靠拢
+                leadSoldier.position.z = -9.6 - subT * 1.3;
+                leadSoldier.position.x = THREE.MathUtils.lerp(0, 1.3, subT / 6);
+
+                // 躲入掩体蹲下动作
+                if (subT > 4) {
+                    leadSoldier.position.y = -0.3; // 蹲姿
+                }
+
+                // 队员掩护位置
+                squadMembers[0].position.set(-3.2, 0, -12 - subT * 0.5); // 车后
+                squadMembers[1].position.set(2.8, 0, -8);
+
+                // 枪口焰交火效果
+                if (Math.random() > 0.6) {
+                    muzzleLight.intensity = 3.0;
+                    muzzleLight.position.copy(leadSoldier.position).add(new THREE.Vector3(0.2, 1.2, -0.8));
+                } else {
+                    muzzleLight.intensity = 0;
+                }
+
+                // 在第 11 秒触发附近炸点
+                if (Math.abs(t - 11) < 0.1) {
+                    triggerExplosion(-2, 1, -22);
+                }
+
+                // 镜头跟随并拉近（强调紧张感）
+                camera.position.set(
+                    leadSoldier.position.x - 0.8,
+                    1.4 + (subT > 4 ? -0.3 : 0),
+                    leadSoldier.position.z + 1.5
+                );
+                camera.lookAt(leadSoldier.position.x + 0.5, 1.2, leadSoldier.position.z - 4);
+
+                // 爆炸带来的强烈剧烈镜头震动
+                if (t > 10.8 && t < 12.5) {
+                    camera.position.x += (Math.random() - 0.5) * 0.15;
+                    camera.position.y += (Math.random() - 0.5) * 0.15;
+                }
+            }
+
+            // --- 阶段 3 [00:14 - 00:20]: 切换至低角度电影级第三人称视角 ---
+            else if (t >= 14 && t < 20) {
+                const subT = t - 14;
+
+                // 士兵在掩体后打出推进手势并起身
+                leadSoldier.position.set(1.3, subT > 2 ? 0 : -0.3, -17.4);
+
+                // 低角度电影视角 (在地面仰拍)
+                camera.position.set(-0.5, 0.35, -20.5);
+                camera.lookAt(leadSoldier.position.x, 1.4, leadSoldier.position.z + 2);
+
+                // 军用直升机低空掠过
+                heliGroup.position.set(12 - subT * 4, 12 + Math.sin(subT)*1.5, -35 + subT * 8);
+                heliGroup.rotation.z = 0.15;
+                heliGroup.children[1].rotation.y += 0.8; // 主旋翼高速旋转
+
+                muzzleLight.intensity = 0;
+            }
+
+            // --- 阶段 4 [00:20 - 00:30]: 全员强力推进，进入下一个路口 ---
+            else if (t >= 20 && t <= 30) {
+                const subT = t - 20;
+
+                // 领头士兵突击推进
+                const currentZ = -17.4 - subT * 2.2;
+                leadSoldier.position.set(1.3 - subT*0.1, 0, currentZ);
+                leadSoldier.position.y = Math.abs(Math.sin(subT * 8)) * 0.12; // 高速奔跑摇摆
+
+                // 小队跟进掩护
+                squadMembers[0].position.set(-1.5, 0, currentZ + 3.5);
+                squadMembers[1].position.set(2.2, 0, currentZ + 2.0);
+
+                // 返回肩后动态跟随视角
+                camera.position.set(
+                    leadSoldier.position.x + 0.3,
+                    1.75,
+                    leadSoldier.position.z + 2.2
+                );
+                camera.lookAt(leadSoldier.position.x, 1.4, leadSoldier.position.z - 8);
+
+                // 奔跑手持震动
+                camera.position.x += (Math.random() - 0.5) * 0.03;
+                camera.position.y += (Math.random() - 0.5) * 0.03;
+
+                // 远端连续环境爆炸
+                if (Math.random() > 0.85) {
+                    triggerExplosion((Math.random()-0.5)*20, 2, currentZ - 30);
+                }
+            }
+
+            // --- 7. 粒子与光照衰减更新 ---
+            if (expLight.intensity > 0) expLight.intensity *= 0.92;
+
+            // 火花物理更新
+            const sparkPosArr = sparkParticles.geometry.attributes.position.array;
+            for(let i=0; i<sparkCount; i++) {
+                sparkPosArr[i*3] += sparkVel[i].x * 0.016;
+                sparkPosArr[i*3+1] += sparkVel[i].y * 0.016; // 重力
+                sparkVel[i].y -= 0.5 * 0.016;
+                sparkPosArr[i*3+2] += sparkVel[i].z * 0.016;
+            }
+            sparkParticles.geometry.attributes.position.needsUpdate = true;
+        }
+
+        // --- 8. 主渲染循环 ---
+        function animate(timestamp) {
+            requestAnimationFrame(animate);
+
+            if (!startTime) startTime = timestamp;
+            if (isPlaying) {
+                const elapsed = (timestamp - startTime) / 1000;
+                updateSequence(elapsed);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // 控制按钮
+        document.getElementById('play-btn').addEventListener('click', () => {
+            startTime = performance.now();
+            isPlaying = true;
+        });
+
+        // 启动动画
+        requestAnimationFrame(animate);
+
+    </script>
 </body>
 </html>
