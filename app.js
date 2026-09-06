@@ -21,6 +21,7 @@ const greeting = document.getElementById("greeting");
 const greetingEn = document.getElementById("greeting-en");
 const factEl = document.getElementById("fact");
 const clicksEl = document.getElementById("clicks");
+const themeBtn = document.getElementById("btn-theme");
 
 function bump() {
   clicks += 1;
@@ -29,6 +30,20 @@ function bump() {
   void greeting.offsetWidth;
   greeting.classList.add("bounce");
 }
+
+function applyTheme(light) {
+  document.documentElement.classList.toggle("light", light);
+  themeBtn.textContent = light ? "深色" : "浅色";
+  localStorage.setItem("damaxuexi-theme", light ? "light" : "dark");
+}
+
+const saved = localStorage.getItem("damaxuexi-theme");
+applyTheme(saved === "light");
+
+themeBtn.addEventListener("click", () => {
+  applyTheme(!document.documentElement.classList.contains("light"));
+  bump();
+});
 
 document.getElementById("btn-hello").addEventListener("click", () => {
   const [zh, en] = hellos[Math.floor(Math.random() * hellos.length)];
