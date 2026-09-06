@@ -1,61 +1,7 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Cache-Control" content="no-cache" />
-  <title>Nightfall Strike</title>
-  <link rel="stylesheet" href="nightfall.css?v=3" />
-</head>
-<body>
-  <div id="stage">
-    <canvas id="game"></canvas>
-    <div id="shade"></div>
-    <section id="menu">
-      <div class="eyebrow">NIGHTFALL STRIKE</div>
-      <h1>夜间突袭<span>30 秒连续行动</span></h1>
-      <p>废墟街道推进 · 掩体交火 · 爆炸与直升机掠过。点击开始；空格切换第一人称；Esc 暂停。</p>
-      <button id="start" disabled>加载中…</button>
-      <div class="instructions">鼠标移动瞄准 · 按住射击 · 命中前方敌方单位计分</div>
-      <div class="sound">首次开始会开启环境音效（可在系统里静音）</div>
-    </section>
-    <section id="pause" hidden>
-      <h2>已暂停</h2>
-      <p>按 Esc 或点击继续</p>
-      <button id="resume">继续</button>
-      <button id="restart" class="secondary">重新开始</button>
-    </section>
-    <section id="end" hidden>
-      <div class="eyebrow">MISSION COMPLETE</div>
-      <h2>行动结束</h2>
-      <p id="result">30 秒行动完成</p>
-      <button id="replay">再来一次</button>
-    </section>
-    <div id="error" hidden>当前浏览器无法启动 WebGL，请换 Chrome / Edge / Safari 最新版再试。</div>
-  </div>
-  <script>
-  function showFail(msg) {
-    var btn = document.getElementById("start");
-    var err = document.getElementById("error");
-    if (btn) { btn.disabled = true; btn.textContent = "加载失败"; }
-    if (err) { err.hidden = false; err.textContent = msg; }
-  }
-  var loadWatch = setTimeout(function () {
-    var btn = document.getElementById("start");
-    if (btn && btn.disabled && btn.textContent.indexOf("加载中") >= 0) {
-      showFail("加载超时。请按 Cmd+Shift+R 强制刷新，或换 Chrome 打开。");
-    }
-  }, 8000);
-  window.__clearNightfallLoadWatch = function () { clearTimeout(loadWatch); };
-  window.__showNightfallFail = showFail;
-  </script>
-  <script type="module">
-  try {
-    await import("./game.js?v=3");
-  } catch (e) {
-    console.error(e);
-    window.__showNightfallFail("脚本加载失败: " + (e && e.message ? e.message : e));
-  }
-  </script>
-</body>
-</html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8" />
+<meta http-equiv="refresh" content="0; url=play.html" />
+<title>Nightfall</title>
+<script>location.replace("play.html");</script>
+</head><body><p><a href="play.html">进入游戏</a></p></body></html>
