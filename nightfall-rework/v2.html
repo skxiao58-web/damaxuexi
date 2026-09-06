@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nightfall Strike v2</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="stage">
+    <canvas id="game"></canvas>
+    <div id="shade"></div>
+    <section id="menu">
+      <div class="eyebrow">NIGHTFALL STRIKE · V2</div>
+      <h1>夜间突袭<span>30 秒连续行动</span></h1>
+      <p>废墟街道推进 · 掩体交火 · 爆炸与直升机掠过。点击开始；空格切换第一人称；Esc 暂停。</p>
+      <button id="start" disabled>加载中…</button>
+      <p id="status" class="sound">正在加载 Three.js…</p>
+      <div class="instructions">鼠标移动瞄准 · 按住射击 · 命中前方敌方单位计分</div>
+    </section>
+    <section id="pause" hidden>
+      <h2>已暂停</h2>
+      <p>按 Esc 或点击继续</p>
+      <button id="resume">继续</button>
+      <button id="restart" class="secondary">重新开始</button>
+    </section>
+    <section id="end" hidden>
+      <div class="eyebrow">MISSION COMPLETE</div>
+      <h2>行动结束</h2>
+      <p id="result">30 秒行动完成</p>
+      <button id="replay">再来一次</button>
+    </section>
+    <div id="error" hidden></div>
+  </div>
+  <script>
+  (function () {
+    var statusEl = document.getElementById("status");
+    var startBtn = document.getElementById("start");
+    var errorEl = document.getElementById("error");
+    var loadWatch = setTimeout(function () {
+      fail("加载超时。请刷新，或换用更稳定的网络后再试。");
+    }, 25000);
+    window.__clearNightfallLoadWatch = function () {
+      clearTimeout(loadWatch);
+      if (statusEl) statusEl.textContent = "就绪 · 点击开始行动";
+    };
+    function fail(msg) {
+      clearTimeout(loadWatch);
+      if (startBtn) {
+        startBtn.disabled = true;
+        startBtn.textContent = "加载失败";
+      }
+      if (statusEl) statusEl.textContent = "加载失败";
+      if (errorEl) {
+        errorEl.hidden = false;
+        errorEl.textContent = msg || "Three.js / 游戏脚本加载失败";
+      }
+    }
+    window.__showNightfallFail = fail;
+    var threeUrls = ["https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js", "https://unpkg.com/three@0.170.0/build/three.min.js", "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"];
+    var idx = 0;
+    function setStatus(t) {
+      if (statusEl) statusEl.textContent = t;
+    }
+    function loadGame() {
+      setStatus("正在加载游戏逻辑…");
+      var s = document.createElement("script");
+      s.src = "game-v2.js";
+      s.onerror = function () {
+        fail("game-v2.js 加载失败");
+      };
+      document.body.appendChild(s);
+    }
+    function loadNextThree() {
+      if (idx >= threeUrls.length) {
+        fail("Three.js 所有 CDN 均失败。请检查网络后刷新。");
+        return;
+      }
+      var url = threeUrls[idx++];
+      setStatus("加载 Three.js（源 " + idx + "/" + threeUrls.length + "）…");
+      var s = document.createElement("script");
+      s.src = url;
+      s.onload = function () {
+        if (window.THREE) {
+          setStatus("Three.js 已就绪，加载游戏…");
+          loadGame();
+        } else {
+          loadNextThree();
+        }
+      };
+      s.onerror = function () {
+        loadNextThree();
+      };
+      document.body.appendChild(s);
+    }
+    loadNextThree();
+  })();
+
+  </script>
+</body>
+</html>
