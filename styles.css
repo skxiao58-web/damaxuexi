@@ -86,3 +86,13 @@ button.theme { padding: .35rem .75rem; font-size: .8rem; font-weight: 600; }
   background: #020617; touch-action: none; cursor: crosshair;
 }
 .game-over { margin: .7rem 0 0; color: #f87171; font-weight: 700; }
+
+.story {
+  margin-top: 1.6rem; padding-top: 1.2rem;
+  border-top: 1px solid var(--border);
+}
+.story-video {
+  width: 100%; border-radius: .9rem; border: 1px solid var(--border);
+  background: #020617; display: block;
+}
+.story-note { margin-top: .7rem; }
