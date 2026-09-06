@@ -96,3 +96,15 @@ button.theme { padding: .35rem .75rem; font-size: .8rem; font-weight: 600; }
   background: #020617; display: block;
 }
 .story-note { margin-top: .7rem; }
+
+.fps-link {
+  margin-top: 1.6rem; padding-top: 1.2rem;
+  border-top: 1px solid var(--border);
+}
+a.link-btn {
+  display: inline-block;
+  border-radius: 999px; padding: .7rem 1.1rem;
+  background: var(--btn); color: var(--btn-text); font-weight: 700;
+  text-decoration: none; font-size: .95rem;
+}
+a.link-btn:hover { filter: brightness(1.08); }
