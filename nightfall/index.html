@@ -36,6 +36,17 @@
 
     <div id="error" hidden>当前浏览器无法启动 WebGL，请换 Chrome / Edge / Safari 最新版再试。</div>
   </div>
-  <script type="module" src="game.js"></script>
+  <script>
+  const loadWatch = setTimeout(() => {
+    const btn = document.getElementById('start');
+    const err = document.getElementById('error');
+    if (btn && btn.disabled) {
+      btn.textContent = '加载失败';
+      if (err) { err.hidden = false; err.textContent = '资源加载失败。请刷新，或换电脑 Chrome 打开。'; }
+    }
+  }, 12000);
+  window.__clearNightfallLoadWatch = () => clearTimeout(loadWatch);
+</script>
+<script type="module" src="game.js"></script>
 </body>
 </html>
