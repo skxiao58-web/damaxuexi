@@ -14,7 +14,7 @@
     </div>
     <h1 id="greeting">你好，世界</h1>
     <p class="en" id="greeting-en">Hello, world.</p>
-    <p class="hint">这是用 Bot 练手的超简单网页。点下面试试。</p>
+    <p class="hint">问候、冷知识，下面还有个射击小游戏。</p>
 
     <div class="actions">
       <button type="button" id="btn-hello">换一句问候</button>
@@ -23,6 +23,24 @@
 
     <p class="fact" id="fact" hidden></p>
     <p class="counter">你已经点了 <strong id="clicks">0</strong> 次</p>
+
+    <section class="game" aria-label="射击小游戏">
+      <div class="game-head">
+        <h2>流星射击</h2>
+        <p class="game-tip">点击或空格开火 · 打掉下落的球</p>
+      </div>
+      <div class="hud">
+        <span>分数 <strong id="score">0</strong></span>
+        <span>生命 <strong id="lives">3</strong></span>
+        <span>最高 <strong id="best">0</strong></span>
+      </div>
+      <canvas id="game" width="520" height="360"></canvas>
+      <div class="game-actions">
+        <button type="button" id="btn-start">开始 / 重开</button>
+        <button type="button" id="btn-pause" class="secondary">暂停</button>
+      </div>
+      <p class="game-over" id="game-over" hidden>游戏结束 — 再点开始重来</p>
+    </section>
   </main>
   <script src="app.js"></script>
 </body>
