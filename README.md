@@ -37,3 +37,9 @@ Pages：https://skxiao58-web.github.io/damaxuexi/nightfall/
 
 Pages：https://skxiao58-web.github.io/damaxuexi/nightfall-rework/
 
+
+## 电影级序列 Demo
+
+打开 `cinematic-demo.html`（或首页按钮「电影级序列 Demo」）：约 30 秒军事电影运镜，经典 script 加载 Three.js r128（优先本地 `nightfall-rework/three.min.js`），无 PointerLock，音效失败静默继续。
+
+Pages：https://skxiao58-web.github.io/damaxuexi/cinematic-demo.html
