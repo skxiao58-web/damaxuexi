@@ -43,3 +43,10 @@ Pages：https://skxiao58-web.github.io/damaxuexi/nightfall-rework/
 打开 `cinematic-demo.html`（或首页按钮「电影级序列 Demo」）：约 30 秒军事电影运镜，经典 script 加载 Three.js r128（优先本地 `nightfall-rework/three.min.js`），无 PointerLock，音效失败静默继续。
 
 Pages：https://skxiao58-web.github.io/damaxuexi/cinematic-demo.html
+
+
+## AAA FPS Demo with Sound
+
+打开 `fps-sound.html`（或首页按钮「AAA FPS · 带音效」）：约 30 秒军事电影序列，经典 script 加载 Three.js r128（优先本地），无 PointerLock；点击开音（程序合成音效，远程 mp3 软失败不挡画面）。
+
+Pages：https://skxiao58-web.github.io/damaxuexi/fps-sound.html
