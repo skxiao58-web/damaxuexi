@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AAA FPS Demo with Sound · damaxuexi</title>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    canvas { display: block; width: 100%; height: 100%; }
+    #hint {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      z-index: 10;
+      pointer-events: none;
+      color: rgba(220, 228, 236, 0.85);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(8, 12, 18, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(6px);
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="hint">点击任意处开启音效 · 约 30 秒电影序列</div>
+
+  <script>
+    (function bootThree() {
+      function start() {
+        try { runDemo(); } catch (err) {
+          console.error(err);
+          document.getElementById('hint').textContent = 'Demo 启动失败，请刷新重试';
+        }
+      }
+
+      function loadScript(src, onOk, onFail) {
+        var s = document.createElement('script');
+        s.src = src;
+        s.async = false;
+        s.onload = onOk;
+        s.onerror = onFail;
+        document.head.appendChild(s);
+      }
+
+      loadScript('./nightfall-rework/three.min.js', function () {
+        if (window.THREE) start();
+        else loadFallback();
+      }, loadFallback);
+
+      function loadFallback() {
+        loadScript(
+          'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+          start,
+          function () {
+            document.getElementById('hint').textContent = 'Three.js 加载失败';
+          }
+        );
+      }
+    })();
+
+    function runDemo() {
+      var THREE = window.THREE;
+      var hint = document.getElementById('hint');
+
+      var scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x000000, 0.03);
+
+      var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+      camera.position.set(0, 1.7, 8);
+
+      var renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      if ('outputEncoding' in renderer && THREE.sRGBEncoding !== undefined) {
+        renderer.outputEncoding = THREE.sRGBEncoding;
+      }
+      document.body.appendChild(renderer.domElement);
+
+      var hemiLight = new THREE.HemisphereLight(0x222233, 0x000000, 0.6);
+      scene.add(hemiLight);
+
+      var dirLight = new THREE.DirectionalLight(0xffaa88, 1.2);
+      dirLight.position.set(10, 20, -10);
+      scene.add(dirLight);
+
+      var ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(200, 200),
+        new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 1, metalness: 0 })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      scene.add(ground);
+
+      function createBuilding(x, z, w, h, d) {
+        var mesh = new THREE.Mesh(
+          new THREE.BoxGeometry(w, h, d),
+          new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9, metalness: 0.1 })
+        );
+        mesh.position.set(x, h / 2, z);
+        scene.add(mesh);
+      }
+
+      for (var i = 0; i < 15; i++) {
+        createBuilding(
+          (Math.random() - 0.5) * 80,
+          -Math.random() * 120 - 10,
+          6 + Math.random() * 8,
+          6 + Math.random() * 12,
+          6 + Math.random() * 8
+        );
+      }
+
+      function makeSoldier() {
+        var g = new THREE.Group();
+        var bodyGeo;
+        if (typeof THREE.CapsuleGeometry === 'function') {
+          bodyGeo = new THREE.CapsuleGeometry(0.4, 1.2, 4, 8);
+        } else {
+          bodyGeo = new THREE.CylinderGeometry(0.35, 0.4, 1.4, 10);
+        }
+        var body = new THREE.Mesh(bodyGeo, new THREE.MeshStandardMaterial({ color: 0x555555 }));
+        g.add(body);
+        var head = new THREE.Mesh(
+          new THREE.SphereGeometry(0.3, 12, 12),
+          new THREE.MeshStandardMaterial({ color: 0x777777 })
+        );
+        head.position.set(0, 1.1, 0);
+        g.add(head);
+        var gun = new THREE.Mesh(
+          new THREE.BoxGeometry(0.8, 0.15, 0.15),
+          new THREE.MeshStandardMaterial({ color: 0x222222 })
+        );
+        gun.position.set(0.5, 0.4, 0.2);
+        g.add(gun);
+        return g;
+      }
+
+      var soldierGroup = makeSoldier();
+      soldierGroup.position.set(0, 1, 5);
+      scene.add(soldierGroup);
+
+      var squad = [];
+      for (var si = 0; si < 3; si++) {
+        var mate = makeSoldier();
+        mate.position.set((si - 1) * 1.5, 1, 7 + si * 0.5);
+        scene.add(mate);
+        squad.push(mate);
+      }
+
+      var heliGroup = new THREE.Group();
+      heliGroup.add(new THREE.Mesh(
+        new THREE.BoxGeometry(3, 1, 1),
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
+      ));
+      var rotor = new THREE.Mesh(
+        new THREE.BoxGeometry(6, 0.1, 0.2),
+        new THREE.MeshStandardMaterial({ color: 0x111111 })
+      );
+      rotor.position.set(0, 0.7, 0);
+      rotor.userData.isRotor = true;
+      heliGroup.add(rotor);
+      heliGroup.position.set(-20, 15, -40);
+      scene.add(heliGroup);
+
+      var smokeParticles = [];
+      function spawnSmoke(x, y, z) {
+        var s = new THREE.Mesh(
+          new THREE.SphereGeometry(0.6, 8, 8),
+          new THREE.MeshStandardMaterial({ color: 0x555555, transparent: true, opacity: 0, depthWrite: false })
+        );
+        s.position.set(x, y, z);
+        scene.add(s);
+        smokeParticles.push({ mesh: s, life: 0 });
+      }
+
+      var explosionLight = new THREE.PointLight(0xffaa33, 0, 30);
+      scene.add(explosionLight);
+
+      // --- Audio: soft-fail remote + procedural fallback after user click ---
+      var audioCtx = null;
+      var audioReady = false;
+      var remoteBuffers = { ambient: null, explosion: null, heli: null, gun: null };
+      var remoteNodes = { ambient: null, heli: null };
+
+      function ensureAudio() {
+        if (audioReady) return;
+        try {
+          var AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return;
+          audioCtx = new AC();
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          audioReady = true;
+          hint.textContent = '音效已开 · 约 30 秒电影序列';
+          tryLoadRemote();
+          startProceduralAmbient();
+        } catch (e) {
+          console.warn('audio init failed', e);
+          hint.textContent = '无音效继续 · 约 30 秒电影序列';
+        }
+      }
+
+      function beep(freq, dur, type, gainVal) {
+        if (!audioCtx) return;
+        try {
+          var o = audioCtx.createOscillator();
+          var g = audioCtx.createGain();
+          o.type = type || 'square';
+          o.frequency.value = freq;
+          g.gain.value = gainVal || 0.08;
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          var t0 = audioCtx.currentTime;
+          g.gain.setValueAtTime(gainVal || 0.08, t0);
+          g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+          o.start(t0);
+          o.stop(t0 + dur + 0.02);
+        } catch (e) {}
+      }
+
+      function playGun() {
+        if (remoteBuffers.gun && audioCtx) {
+          try {
+            var src = audioCtx.createBufferSource();
+            src.buffer = remoteBuffers.gun;
+            var g = audioCtx.createGain();
+            g.gain.value = 0.7;
+            src.connect(g);
+            g.connect(audioCtx.destination);
+            src.start(0);
+            return;
+          } catch (e) {}
+        }
+        beep(180, 0.06, 'sawtooth', 0.12);
+        beep(90, 0.08, 'square', 0.08);
+      }
+
+      function playExplosion() {
+        if (remoteBuffers.explosion && audioCtx) {
+          try {
+            var src = audioCtx.createBufferSource();
+            src.buffer = remoteBuffers.explosion;
+            var g = audioCtx.createGain();
+            g.gain.value = 0.85;
+            src.connect(g);
+            g.connect(audioCtx.destination);
+            src.start(0);
+            return;
+          } catch (e) {}
+        }
+        beep(55, 0.35, 'sawtooth', 0.2);
+        beep(40, 0.5, 'triangle', 0.12);
+      }
+
+      var ambientOsc = null;
+      var heliOsc = null;
+
+      function startProceduralAmbient() {
+        if (!audioCtx || ambientOsc) return;
+        try {
+          ambientOsc = audioCtx.createOscillator();
+          var g = audioCtx.createGain();
+          ambientOsc.type = 'sine';
+          ambientOsc.frequency.value = 55;
+          g.gain.value = 0.02;
+          ambientOsc.connect(g);
+          g.connect(audioCtx.destination);
+          ambientOsc.start();
+        } catch (e) {}
+      }
+
+      function startProceduralHeli() {
+        if (!audioCtx || heliOsc) return;
+        try {
+          heliOsc = audioCtx.createOscillator();
+          var g = audioCtx.createGain();
+          heliOsc.type = 'sawtooth';
+          heliOsc.frequency.value = 70;
+          g.gain.value = 0.04;
+          heliOsc.connect(g);
+          g.connect(audioCtx.destination);
+          heliOsc.start();
+        } catch (e) {}
+      }
+
+      function tryLoadRemote() {
+        if (!audioCtx) return;
+        var urls = {
+          ambient: 'https://cdn.jsdelivr.net/gh/naptha/tesseract.js@master/docs/img/favicon.png',
+          explosion: null,
+          heli: null,
+          gun: null
+        };
+        // Intentionally skip broken naptha sound URLs; procedural audio is the reliable path.
+        // Keep hook for future local assets under ./sounds/
+        var localTry = {
+          ambient: './sounds/war_ambience.mp3',
+          explosion: './sounds/explosion.mp3',
+          heli: './sounds/helicopter.mp3',
+          gun: './sounds/gunshot.mp3'
+        };
+        Object.keys(localTry).forEach(function (key) {
+          fetch(localTry[key]).then(function (r) {
+            if (!r.ok) throw new Error('missing');
+            return r.arrayBuffer();
+          }).then(function (ab) {
+            return audioCtx.decodeAudioData(ab);
+          }).then(function (buf) {
+            remoteBuffers[key] = buf;
+            if (key === 'ambient' && !remoteNodes.ambient) {
+              var src = audioCtx.createBufferSource();
+              src.buffer = buf;
+              src.loop = true;
+              var g = audioCtx.createGain();
+              g.gain.value = 0.45;
+              src.connect(g);
+              g.connect(audioCtx.destination);
+              src.start(0);
+              remoteNodes.ambient = src;
+              if (ambientOsc) { try { ambientOsc.stop(); } catch (e) {} ambientOsc = null; }
+            }
+            if (key === 'heli' && !remoteNodes.heli) {
+              var hs = audioCtx.createBufferSource();
+              hs.buffer = buf;
+              hs.loop = true;
+              var hg = audioCtx.createGain();
+              hg.gain.value = 0.5;
+              hs.connect(hg);
+              hg.connect(audioCtx.destination);
+              hs.start(0);
+              remoteNodes.heli = hs;
+              if (heliOsc) { try { heliOsc.stop(); } catch (e) {} heliOsc = null; }
+            }
+          }).catch(function () {});
+        });
+      }
+
+      document.body.addEventListener('click', function () {
+        ensureAudio();
+        playGun();
+      });
+      document.body.addEventListener('touchstart', function () {
+        ensureAudio();
+      }, { passive: true });
+
+      var explosionFired = {};
+      function triggerExplosion(x, z, tag) {
+        if (tag && explosionFired[tag]) return;
+        if (tag) explosionFired[tag] = true;
+        explosionLight.position.set(x, 3, z);
+        explosionLight.intensity = 4;
+        for (var i = 0; i < 12; i++) {
+          spawnSmoke(
+            x + (Math.random() - 0.5) * 4,
+            1 + Math.random() * 2,
+            z + (Math.random() - 0.5) * 4
+          );
+        }
+        playExplosion();
+      }
+
+      var clock = new THREE.Clock();
+      var totalTime = 0;
+      var heliAudioStarted = false;
+
+      function updateTimeline(dt) {
+        totalTime += dt;
+
+        if (totalTime < 5) {
+          soldierGroup.position.z -= dt * 1.5;
+          for (var a = 0; a < squad.length; a++) squad[a].position.z -= dt * 1.5;
+        }
+
+        if (totalTime > 5 && totalTime < 10) {
+          if (Math.random() < 0.02) {
+            triggerExplosion((Math.random() - 0.5) * 20, -40 - Math.random() * 20);
+          }
+          soldierGroup.position.z -= dt * 1.2;
+          for (var b = 0; b < squad.length; b++) squad[b].position.z -= dt * 1.2;
+        }
+
+        if (totalTime > 10 && totalTime < 15) {
+          soldierGroup.position.z = THREE.MathUtils.lerp(soldierGroup.position.z, -20, 0.05);
+          for (var c = 0; c < squad.length; c++) {
+            squad[c].position.z = THREE.MathUtils.lerp(squad[c].position.z, -18 + c * 0.4, 0.05);
+          }
+        }
+
+        if (totalTime > 15 && totalTime < 18) {
+          if (Math.random() < 0.05) {
+            triggerExplosion(0 + (Math.random() - 0.5) * 6, -22 + (Math.random() - 0.5) * 4);
+          }
+        }
+
+        if (totalTime > 18 && totalTime < 24) {
+          soldierGroup.position.z -= dt * 2.0;
+          for (var d = 0; d < squad.length; d++) squad[d].position.z -= dt * 2.0;
+        }
+
+        if (totalTime > 24 && totalTime < 28) {
+          if (!heliAudioStarted) {
+            heliAudioStarted = true;
+            startProceduralHeli();
+          }
+          heliGroup.position.x += dt * 8;
+          heliGroup.position.z += dt * 3;
+          heliGroup.position.y = 12 + Math.sin(totalTime * 2) * 1.5;
+        }
+
+        if (totalTime > 28 && totalTime < 30) {
+          soldierGroup.position.z -= dt * 2.5;
+          for (var e = 0; e < squad.length; e++) squad[e].position.z -= dt * 2.5;
+        }
+
+        if (totalTime >= 30 && hint.textContent.indexOf('结束') < 0) {
+          hint.textContent = '序列结束 · 点击可继续听枪响 · 刷新重播';
+          if (heliOsc) { try { heliOsc.stop(); } catch (e) {} heliOsc = null; }
+        }
+      }
+
+      function updateSmoke(dt) {
+        for (var idx = smokeParticles.length - 1; idx >= 0; idx--) {
+          var p = smokeParticles[idx];
+          p.life += dt;
+          if (p.life < 0.2) {
+            p.mesh.material.opacity = THREE.MathUtils.lerp(p.mesh.material.opacity, 0.6, 0.2);
+          } else {
+            p.mesh.material.opacity = THREE.MathUtils.lerp(p.mesh.material.opacity, 0.0, 0.05);
+            p.mesh.position.y += dt * 0.5;
+          }
+          if (p.life > 3) {
+            scene.remove(p.mesh);
+            smokeParticles.splice(idx, 1);
+          }
+        }
+        if (explosionLight.intensity > 0) {
+          explosionLight.intensity = Math.max(0, explosionLight.intensity - dt * 3);
+        }
+      }
+
+      function updateCamera() {
+        var target = soldierGroup.position;
+        camera.position.x = THREE.MathUtils.lerp(camera.position.x, target.x + 1.2, 0.08);
+        camera.position.y = THREE.MathUtils.lerp(camera.position.y, target.y + 1.2, 0.08);
+        camera.position.z = THREE.MathUtils.lerp(camera.position.z, target.z + 4.5, 0.08);
+        camera.lookAt(target.x, target.y + 0.8, target.z - 6);
+      }
+
+      function animate() {
+        requestAnimationFrame(animate);
+        var dt = Math.min(clock.getDelta(), 0.05);
+        updateTimeline(dt);
+        updateSmoke(dt);
+        rotor.rotation.y += dt * 10;
+        updateCamera();
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', function () {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+  </script>
+</body>
+</html>
