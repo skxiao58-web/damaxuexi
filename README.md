@@ -50,3 +50,10 @@ Pages：https://skxiao58-web.github.io/damaxuexi/cinematic-demo.html
 打开 `fps-sound.html`（或首页按钮「AAA FPS · 带音效」）：约 30 秒军事电影序列，经典 script 加载 Three.js r128（优先本地），无 PointerLock；点击开音（程序合成音效，远程 mp3 软失败不挡画面）。
 
 Pages：https://skxiao58-web.github.io/damaxuexi/fps-sound.html
+
+
+## 迷你选股表达式引擎
+
+打开 `mini_stock_engine.html`：纯前端迷你选股表达式引擎（CODELIKE / BARSLAST 等）+ 12 项自测。源自 WorkBuddy 硬核代码压力测试产物。
+
+Pages：https://skxiao58-web.github.io/damaxuexi/mini_stock_engine.html
